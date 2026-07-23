@@ -59,18 +59,10 @@ def neoHookIncompressible(domain, u):
     return P
 
 
-def simplifiedMooneyRivlinTP1(domain, u):
-    c_01 = 17.4
-    c_10 = -11.11
-    c_02 = 3.134
+def simplifiedMooneyRivlinTP1(domain, u, c_10, c_01, c_02):
 
-    # c_01 = 1
-    # c_10 = -1
-    # c_02 = 1
-    print(f"simplifiedMooneyRivlinTP1 with C_01={c_01}, C_10={c_10}, C_02={c_02}")
-
-    C_01 = dolfinx.fem.Constant(domain, dolfinx.default_scalar_type(c_01))
     C_10 = dolfinx.fem.Constant(domain, dolfinx.default_scalar_type(c_10))
+    C_01 = dolfinx.fem.Constant(domain, dolfinx.default_scalar_type(c_01))
     C_02 = dolfinx.fem.Constant(domain, dolfinx.default_scalar_type(c_02))
 
     d = len(u)
@@ -83,6 +75,43 @@ def simplifiedMooneyRivlinTP1(domain, u):
     I_2 = 0.5 * (ufl.tr(C) ** 2 - ufl.tr(C * C))
 
     W = C_10 * (I_1 - 3) + C_01 * (I_2 - 3) + C_02 * (I_2 - 3) ** 2
+
+    P = ufl.diff(W, F)
+    return P
+
+
+def generalizedMooneyRivlinDegree2(domain, u, c_10, c_01, c_11, c_20, c_02, d_1, d_2):
+
+    C_10 = dolfinx.fem.Constant(domain, dolfinx.default_scalar_type(c_10))
+    C_01 = dolfinx.fem.Constant(domain, dolfinx.default_scalar_type(c_01))
+    C_11 = dolfinx.fem.Constant(domain, dolfinx.default_scalar_type(c_11))
+    C_20 = dolfinx.fem.Constant(domain, dolfinx.default_scalar_type(c_20))
+    C_02 = dolfinx.fem.Constant(domain, dolfinx.default_scalar_type(c_02))
+
+    D_1 = dolfinx.fem.Constant(domain, dolfinx.default_scalar_type(d_1))
+    D_2 = dolfinx.fem.Constant(domain, dolfinx.default_scalar_type(d_2))
+
+    d = len(u)
+    I = ufl.variable(ufl.Identity(d))
+    F = ufl.variable(I + ufl.grad(u))
+    C = ufl.variable(F.T * F)
+
+    # see https://en.wikipedia.org/wiki/Invariants_of_tensors
+    I_1 = ufl.tr(C)
+    I_2 = 0.5 * (ufl.tr(C) ** 2 - ufl.tr(C * C))
+    J = ufl.det(C)
+
+    W = (
+        C_10 * (I_1 - 3)
+        + C_01 * (I_2 - 3)
+        + C_11 * (I_1 - 3)(I_2 - 3)
+        + C_20 * (I_1 - 3) ** 2
+        + C_02 * (I_2 - 3) ** 2
+        # + 1 / D_1 * (J - 1) ** 2
+    )
+    # if d_1 != 0.0:
+    # if d_2 != 0.0:
+    #     W += 1 / D_2 * (J - 1) ** 4
 
     P = ufl.diff(W, F)
     return P
