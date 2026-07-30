@@ -2,7 +2,7 @@ import ufl
 import dolfinx
 
 
-def neoHook(domain, u, youngsModulus, poissonRatio):
+def neoHookDokken(domain, u, youngsModulus, poissonRatio):
     # Define kinematic quantities used in the problem
     # Spatial dimension
     d = len(u)
@@ -37,25 +37,21 @@ def neoHook(domain, u, youngsModulus, poissonRatio):
     return P
 
 
-def neoHookIncompressible(domain, u):
-    c_10 = 10
-
-    print(f"neoHookIncompressible with C_10={c_10}")
-
-    C_10 = dolfinx.fem.Constant(domain, dolfinx.default_scalar_type(c_10))
-
+def neoHookBleiler(domain, u, mu, Lambda):
+    # same as dokken, but J instead of ln(J) in last term.
     d = len(u)
+
     I = ufl.variable(ufl.Identity(d))
     F = ufl.variable(I + ufl.grad(u))
     C = ufl.variable(F.T * F)
 
-    # see https://en.wikipedia.org/wiki/Invariants_of_tensors
-    I_1 = ufl.tr(C)
-    I_2 = 0.5 * (ufl.tr(C) ** 2 - ufl.tr(C * C))
+    I_1 = ufl.variable(ufl.tr(C))
+    J = ufl.variable(ufl.det(F))
 
-    W = C_10 * (I_1 - 3)
+    W = (mu / 2) * (I_1 - 3) - mu * ufl.ln(J) + (Lambda / 2) * (J - 1) ** 2
 
     P = ufl.diff(W, F)
+
     return P
 
 
@@ -97,9 +93,9 @@ def generalizedMooneyRivlinDegree2(domain, u, c_10, c_01, c_11, c_20, c_02, d_1,
     C = ufl.variable(F.T * F)
 
     # see https://en.wikipedia.org/wiki/Invariants_of_tensors
-    I_1 = ufl.tr(C)
-    I_2 = 0.5 * (ufl.tr(C) ** 2 - ufl.tr(C * C))
-    J = ufl.det(C)
+    I_1 = ufl.variable(ufl.tr(C))
+    I_2 = ufl.variable(0.5 * (ufl.tr(C) ** 2 - ufl.tr(C * C)))
+    J = ufl.variable(ufl.det(C))
 
     W = (
         C_10 * (I_1 - 3)
@@ -112,6 +108,55 @@ def generalizedMooneyRivlinDegree2(domain, u, c_10, c_01, c_11, c_20, c_02, d_1,
     # if d_1 != 0.0:
     # if d_2 != 0.0:
     #     W += 1 / D_2 * (J - 1) ** 4
+
+    # W += might lead to self reference problems.
+
+    P = ufl.diff(W, F)
+    return P
+
+
+def generalizedMooneyRivlinDegree1(domain, u, c_10, c_01, d_1):
+
+    C_10 = dolfinx.fem.Constant(domain, dolfinx.default_scalar_type(c_10))
+    C_01 = dolfinx.fem.Constant(domain, dolfinx.default_scalar_type(c_01))
+    D_1 = dolfinx.fem.Constant(domain, dolfinx.default_scalar_type(d_1))
+
+    d = len(u)
+    I = ufl.variable(ufl.Identity(d))
+    F = ufl.variable(I + ufl.grad(u))
+    C = ufl.variable(F.T * F)
+
+    # see https://en.wikipedia.org/wiki/Invariants_of_tensors
+    I_1 = ufl.variable(ufl.tr(C))
+    I_2 = ufl.variable(0.5 * (ufl.tr(C) ** 2 - ufl.tr(C * C)))
+    J = ufl.variable(ufl.det(C))
+
+    W = C_10 * (I_1 - 3) + C_01 * (I_2 - 3) + 1 / D_1 * (J - 1) ** 2
+
+    P = ufl.diff(W, F)
+    return P
+
+
+def generalizedMooneyRivlinDegree1Wikipedia(domain, u, c_10, c_01, d_1):
+    # https://en.wikipedia.org/wiki/Mooney%E2%80%93Rivlin_solid
+
+    C_10 = dolfinx.fem.Constant(domain, dolfinx.default_scalar_type(c_10))
+    C_01 = dolfinx.fem.Constant(domain, dolfinx.default_scalar_type(c_01))
+    D_1 = dolfinx.fem.Constant(domain, dolfinx.default_scalar_type(d_1))
+
+    d = len(u)
+    I = ufl.variable(ufl.Identity(d))
+    F = ufl.variable(I + ufl.grad(u))
+    C = ufl.variable(F.T * F)
+    B = ufl.variable(F * F.T)
+
+    J_C = ufl.variable(ufl.det(C))
+    J_F = ufl.variable(ufl.det(F))
+
+    I_1bar = ufl.variable(J_F ** (-2 / 3) * ufl.tr(C))
+    I_2bar = ufl.variable(J_F ** (-4 / 3) * (0.5 * (ufl.tr(C) ** 2 - ufl.tr(C * C))))
+
+    W = C_10 * (I_1bar - 3) + C_01 * (I_2bar - 3) + 1 / D_1 * (J_F - 1) ** 2
 
     P = ufl.diff(W, F)
     return P
