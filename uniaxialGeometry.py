@@ -11,6 +11,8 @@ def create_uniaxial_geometry(h: float) -> tuple[mesh.Mesh, ufl.Measure]:
     gmsh.option.setNumber("General.Verbosity", 0)
     gmsh.model.add("geometry_test")
 
+    # points going counter clockwise around geometry, starting in lower left corner
+    # points along bottom
     P1 = gmsh.model.geo.addPoint(0.0, 0.0, 0.0, h)
     P2 = gmsh.model.geo.addPoint(21.5, 0.0, 0.0, h)
     P3 = gmsh.model.geo.addPoint(45.0, 5.0, 0.0, h)
@@ -19,6 +21,7 @@ def create_uniaxial_geometry(h: float) -> tuple[mesh.Mesh, ufl.Measure]:
     P6 = gmsh.model.geo.addPoint(105.0, 5.0, 0.0, h)
     P7 = gmsh.model.geo.addPoint(128.5, 0, 0.0, h)
     P8 = gmsh.model.geo.addPoint(150.0, 0, 0.0, h)
+    # points along top
     P9 = gmsh.model.geo.addPoint(150.0, 20.0, 0.0, h)
     P10 = gmsh.model.geo.addPoint(128.5, 20.0, 0.0, h)
     P11 = gmsh.model.geo.addPoint(105.0, 15.0, 0.0, h)
@@ -87,7 +90,7 @@ def create_uniaxial_geometry(h: float) -> tuple[mesh.Mesh, ufl.Measure]:
 
     # extrusion
     extruded_left = gmsh.model.geo.extrude([(2, surface_left)], 0, 0, 4)
-    extruded_lef_transition = gmsh.model.geo.extrude(
+    extruded_left_transition = gmsh.model.geo.extrude(
         [(2, surface_left_transition)], 0, 0, 4
     )
     extruded_center = gmsh.model.geo.extrude([(2, surface_center)], 0, 0, 4)
@@ -103,7 +106,7 @@ def create_uniaxial_geometry(h: float) -> tuple[mesh.Mesh, ufl.Measure]:
 
     # Create the volume tag
     gmsh.model.addPhysicalGroup(3, [extruded_left[1][1]], 1)
-    gmsh.model.addPhysicalGroup(3, [extruded_lef_transition[1][1]], 2)
+    gmsh.model.addPhysicalGroup(3, [extruded_left_transition[1][1]], 2)
     gmsh.model.addPhysicalGroup(3, [extruded_center[1][1]], 3)
     gmsh.model.addPhysicalGroup(3, [extruded_right_transition[1][1]], 4)
     gmsh.model.addPhysicalGroup(3, [extruded_right[1][1]], 5)
