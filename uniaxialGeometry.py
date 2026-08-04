@@ -89,15 +89,16 @@ def create_uniaxial_geometry(h: float) -> tuple[mesh.Mesh, ufl.Measure]:
     surface_right = gmsh.model.geo.addPlaneSurface([loop_right])
 
     # extrusion
-    extruded_left = gmsh.model.geo.extrude([(2, surface_left)], 0, 0, 4)
+    thickness = 4
+    extruded_left = gmsh.model.geo.extrude([(2, surface_left)], 0, 0, thickness)
     extruded_left_transition = gmsh.model.geo.extrude(
-        [(2, surface_left_transition)], 0, 0, 4
+        [(2, surface_left_transition)], 0, 0, thickness
     )
-    extruded_center = gmsh.model.geo.extrude([(2, surface_center)], 0, 0, 4)
+    extruded_center = gmsh.model.geo.extrude([(2, surface_center)], 0, 0, thickness)
     extruded_right_transition = gmsh.model.geo.extrude(
-        [(2, surface_right_transition)], 0, 0, 4
+        [(2, surface_right_transition)], 0, 0, thickness
     )
-    extruded_right = gmsh.model.geo.extrude([(2, surface_right)], 0, 0, 4)
+    extruded_right = gmsh.model.geo.extrude([(2, surface_right)], 0, 0, thickness)
 
     gmsh.model.geo.synchronize()
 
@@ -114,21 +115,31 @@ def create_uniaxial_geometry(h: float) -> tuple[mesh.Mesh, ufl.Measure]:
     # create face tag for the boundary
     # left
     top_surface_left = extruded_left[0][1]
-    gmsh.model.addPhysicalGroup(2, [top_surface_left, surface_left], 1000)
+    gmsh.model.addPhysicalGroup(2, [top_surface_left, surface_left], 10)
 
     # right
     top_surface_right = extruded_right[0][1]
-    gmsh.model.addPhysicalGroup(2, [top_surface_right, surface_right], 2000)
+    gmsh.model.addPhysicalGroup(2, [top_surface_right, surface_right], 11)
 
+    # L0 left
+    L0_left = extruded_center[5][1]
+    gmsh.model.addPhysicalGroup(2, [L0_left], 20)
+
+    # L0 right
+    L0_right = extruded_center[3][1]
+    gmsh.model.addPhysicalGroup(2, [L0_right], 21)
+
+    # generate the mesh
     gmsh.model.mesh.generate(3)
 
     data = gmshio.model_to_mesh(gmsh.model, MPI.COMM_WORLD, 0, gdim=3)
     msh = data.mesh
     facet_tags = data.facet_tags
+    cell_tags = data.cell_tags
 
     msh.topology.create_connectivity(2, 3)
     msh.topology.create_connectivity(1, 2)
     msh.topology.create_connectivity(1, 3)
 
     gmsh.finalize()
-    return msh, facet_tags
+    return msh, facet_tags, cell_tags
