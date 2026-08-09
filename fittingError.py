@@ -47,7 +47,7 @@ def fittingError(dfGroundTruth, dfSimulated):
         [np.max(dfGroundTruth["nominalStrain"]), np.max(dfSimulated["nominalStrain"])]
     )
     xArray = np.linspace(
-        minStrainContainedInBothDatasets, maxStrainContainedInBothDatasets, 100
+        minStrainContainedInBothDatasets, maxStrainContainedInBothDatasets, 1000
     )  # just interpolate to high number of points to approximate integral via sum.
     dfGroundTruthInterpolated = interpolate_dataframe(dfGroundTruth, xArray)
     dfSimulatedInterpolated = interpolate_dataframe(dfSimulated, xArray)
