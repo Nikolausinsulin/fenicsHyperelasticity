@@ -86,6 +86,10 @@ def create_biaxial_geometry(h: float) -> tuple[mesh.Mesh, ufl.Measure]:
     vol1VerticalLegFarSide = vol1[6][1]
     gmsh.model.addPhysicalGroup(2, [vol1VerticalLegFarSide], 4)
 
+    vol1FrontalArea = vol1[0][1]
+    vol2FrontalArea = vol2[0][1]
+    gmsh.model.addPhysicalGroup(2, [vol1FrontalArea, vol2FrontalArea], 5)
+
     gmsh.option.setNumber("Mesh.CharacteristicLengthMin", h)
     gmsh.option.setNumber("Mesh.CharacteristicLengthMax", h)
 
