@@ -5,7 +5,7 @@ from dolfinx.io import gmsh as gmshio
 from mpi4py import MPI
 
 
-def create_biaxial_geometry(h: float) -> tuple[mesh.Mesh, ufl.Measure]:
+def create_biaxial_geometry(h: float):
 
     gmsh.initialize()
     gmsh.option.setNumber("General.Verbosity", 0)
