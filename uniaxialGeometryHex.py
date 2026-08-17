@@ -5,7 +5,7 @@ from dolfinx.io import gmsh as gmshio
 from mpi4py import MPI
 
 
-def create_uniaxial_geometry(h: float) -> tuple[mesh.Mesh, ufl.Measure]:
+def create_uniaxial_geometry():
 
     nPointsVertical = 6  # in paper is 10
     nPointsLeftAndRight = 4  # in paper is 8
@@ -21,29 +21,29 @@ def create_uniaxial_geometry(h: float) -> tuple[mesh.Mesh, ufl.Measure]:
 
     # points going counter clockwise around geometry, starting in lower left corner
     # points along bottom
-    P1 = gmsh.model.geo.addPoint(0.0, 0.0, 0.0, h)
-    P2 = gmsh.model.geo.addPoint(21.5, 0.0, 0.0, h)
-    P3 = gmsh.model.geo.addPoint(45.0, 5.0, 0.0, h)
-    P4 = gmsh.model.geo.addPoint(50.0, 5.0, 0.0, h)
-    P5 = gmsh.model.geo.addPoint(100.0, 5.0, 0.0, h)
-    P6 = gmsh.model.geo.addPoint(105.0, 5.0, 0.0, h)
-    P7 = gmsh.model.geo.addPoint(128.5, 0, 0.0, h)
-    P8 = gmsh.model.geo.addPoint(150.0, 0, 0.0, h)
+    P1 = gmsh.model.geo.addPoint(0.0, 0.0, 0.0, 1)
+    P2 = gmsh.model.geo.addPoint(21.5, 0.0, 0.0, 1)
+    P3 = gmsh.model.geo.addPoint(45.0, 5.0, 0.0, 1)
+    P4 = gmsh.model.geo.addPoint(50.0, 5.0, 0.0, 1)
+    P5 = gmsh.model.geo.addPoint(100.0, 5.0, 0.0, 1)
+    P6 = gmsh.model.geo.addPoint(105.0, 5.0, 0.0, 1)
+    P7 = gmsh.model.geo.addPoint(128.5, 0, 0.0, 1)
+    P8 = gmsh.model.geo.addPoint(150.0, 0, 0.0, 1)
     # points along top
-    P9 = gmsh.model.geo.addPoint(150.0, 20.0, 0.0, h)
-    P10 = gmsh.model.geo.addPoint(128.5, 20.0, 0.0, h)
-    P11 = gmsh.model.geo.addPoint(105.0, 15.0, 0.0, h)
-    P12 = gmsh.model.geo.addPoint(100.0, 15.0, 0.0, h)
-    P13 = gmsh.model.geo.addPoint(50.0, 15.0, 0.0, h)
-    P14 = gmsh.model.geo.addPoint(45.0, 15.0, 0.0, h)
-    P15 = gmsh.model.geo.addPoint(21.5, 20.0, 0.0, h)
-    P16 = gmsh.model.geo.addPoint(0.0, 20.0, 0.0, h)
+    P9 = gmsh.model.geo.addPoint(150.0, 20.0, 0.0, 1)
+    P10 = gmsh.model.geo.addPoint(128.5, 20.0, 0.0, 1)
+    P11 = gmsh.model.geo.addPoint(105.0, 15.0, 0.0, 1)
+    P12 = gmsh.model.geo.addPoint(100.0, 15.0, 0.0, 1)
+    P13 = gmsh.model.geo.addPoint(50.0, 15.0, 0.0, 1)
+    P14 = gmsh.model.geo.addPoint(45.0, 15.0, 0.0, 1)
+    P15 = gmsh.model.geo.addPoint(21.5, 20.0, 0.0, 1)
+    P16 = gmsh.model.geo.addPoint(0.0, 20.0, 0.0, 1)
 
     # center of circle
-    P17 = gmsh.model.geo.addPoint(45.0, -55.0, 0.0, h)
-    P18 = gmsh.model.geo.addPoint(105.0, -55.0, 0.0, h)
-    P19 = gmsh.model.geo.addPoint(105.0, 75.0, 0.0, h)
-    P20 = gmsh.model.geo.addPoint(45.0, 75.0, 0.0, h)
+    P17 = gmsh.model.geo.addPoint(45.0, -55.0, 0.0, 1)
+    P18 = gmsh.model.geo.addPoint(105.0, -55.0, 0.0, 1)
+    P19 = gmsh.model.geo.addPoint(105.0, 75.0, 0.0, 1)
+    P20 = gmsh.model.geo.addPoint(45.0, 75.0, 0.0, 1)
 
     # external line
     l1 = gmsh.model.geo.addLine(P1, P2)
@@ -218,7 +218,7 @@ def create_uniaxial_geometry(h: float) -> tuple[mesh.Mesh, ufl.Measure]:
     gmsh.model.geo.synchronize()
 
     # set the size of the mesh
-    gmsh.model.mesh.setSize(gmsh.model.getEntities(0), h)
+    gmsh.model.mesh.setSize(gmsh.model.getEntities(0), 1)
 
     # Create the volume tag
     gmsh.model.addPhysicalGroup(3, [extruded_left[1][1]], 1)
